@@ -11,6 +11,7 @@ import CsvUploadScreen from './src/screens/CsvUploadScreen';
 import PracticeScreen from './src/screens/PracticeScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import WordHistoryScreen from './src/screens/WordHistoryScreen';
+import EditWordScreen from './src/screens/EditWordScreen';
 
 const Stack = createStackNavigator();
 
@@ -22,18 +23,55 @@ export default function App() {
         <Stack.Navigator
           initialRouteName="Home"
           screenOptions={{
-            headerStyle: { backgroundColor: '#667eea' },
+            headerStyle: {
+              backgroundColor: '#667eea',
+            },
             headerTintColor: '#fff',
-            headerTitleStyle: { fontWeight: 'bold' },
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
           }}
         >
-          <Stack.Screen name="Home" component={HomeScreen} options={{ title: '🎓 Spelling Trainer' }} />
-          <Stack.Screen name="AddWords" component={AddWordsScreen} options={{ title: 'Add Words' }} />
-          <Stack.Screen name="ManualAdd" component={ManualAddScreen} options={{ title: 'Add Manually' }} />
-          <Stack.Screen name="CsvUpload" component={CsvUploadScreen} options={{ title: 'Upload CSV' }} />
-          <Stack.Screen name="Practice" component={PracticeScreen} options={{ title: 'Practice Session' }} />
-          <Stack.Screen name="Results" component={ResultsScreen} options={{ title: 'Results' }} />
-          <Stack.Screen name="WordHistory" component={WordHistoryScreen} options={{ title: 'Word History' }} />
+          <Stack.Screen 
+            name="Home" 
+            component={HomeScreen}
+            options={{ title: '🎓 Spelling Trainer' }}
+          />
+          <Stack.Screen 
+            name="AddWords" 
+            component={AddWordsScreen}
+            options={{ title: 'Add Words' }}
+          />
+          <Stack.Screen 
+            name="ManualAdd" 
+            component={ManualAddScreen}
+            options={{ title: 'Add Manually' }}
+          />
+          <Stack.Screen 
+            name="CsvUpload" 
+            component={CsvUploadScreen}
+            options={{ title: 'Upload CSV' }}
+          />
+          <Stack.Screen 
+            name="Practice" 
+            component={PracticeScreen}
+            options={{ title: 'Practice Session' }}
+          />
+          <Stack.Screen 
+            name="Results" 
+            component={ResultsScreen}
+            options={{ title: 'Results' }}
+          />
+          <Stack.Screen 
+            name="WordHistory" 
+            component={WordHistoryScreen}
+            options={{ title: 'Word History' }}
+          />
+          <Stack.Screen 
+            name="EditWord" 
+            component={EditWordScreen}
+            options={{ title: 'Edit Word' }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </>
