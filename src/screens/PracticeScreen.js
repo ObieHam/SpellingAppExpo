@@ -19,6 +19,8 @@ export default function PracticeScreen({ navigation, route }) {
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [sessionMissed, setSessionMissed] = useState([]);
   const [isLongPressing, setIsLongPressing] = useState(false);
+  const [showExampleInput, setShowExampleInput] = useState(false);
+  const [newExample, setNewExample] = useState('');
 
   useEffect(() => {
     loadPracticeData();
@@ -49,8 +51,28 @@ export default function PracticeScreen({ navigation, route }) {
       SpeechService.speakWord(currentExample);
       setTimeout(() => setIsLongPressing(false), 500);
     } else {
-      Alert.alert('No Example', 'This word does not have an example sentence yet.');
+      Alert.alert('No Example', 'This word does not have an example sentence yet. Add one below!');
     }
+  };
+
+  const handleSaveExample = async () => {
+    if (!newExample.trim()) {
+      Alert.alert('Empty', 'Please enter an example sentence.');
+      return;
+    }
+
+    const data = await StorageService.loadData();
+    if (!data.wordHistory[currentWord]) {
+      data.wordHistory[currentWord] = { correct: 0, incorrect: 0, mistakes: [], exampleSentence: '' };
+    }
+    
+    data.wordHistory[currentWord].exampleSentence = newExample.trim();
+    await StorageService.saveData(data);
+    
+    setCurrentExample(newExample.trim());
+    setNewExample('');
+    setShowExampleInput(false);
+    Alert.alert('Saved!', 'Example sentence has been added.');
   };
 
   const checkSpelling = async () => {
@@ -123,6 +145,8 @@ export default function PracticeScreen({ navigation, route }) {
     setFeedback(null);
     setShowComparison(false);
     setComparison([]);
+    setShowExampleInput(false);
+    setNewExample('');
 
     setTimeout(() => {
       SpeechService.speakWord(practiceWords[nextIndex]);
@@ -193,12 +217,42 @@ export default function PracticeScreen({ navigation, route }) {
             </TouchableOpacity>
           </View>
 
-          {currentExample && (
-            <View style={styles.exampleContainer}>
-              <Text style={styles.exampleLabel}>💡 Example sentence available</Text>
-              <Text style={styles.exampleHint}>(Long press 🔊 to hear it)</Text>
-            </View>
-          )}
+          {/* Always show example section */}
+          <View style={styles.exampleSection}>
+            {currentExample ? (
+              <View style={styles.exampleAvailable}>
+                <Text style={styles.exampleLabel}>💡 Example sentence available</Text>
+                <Text style={styles.exampleHint}>(Long press 🔊 to hear it)</Text>
+              </View>
+            ) : (
+              <View style={styles.exampleUnavailable}>
+                <TouchableOpacity 
+                  onPress={() => setShowExampleInput(!showExampleInput)}
+                  style={styles.exampleDropdown}
+                >
+                  <Text style={styles.exampleDropdownText}>
+                    {showExampleInput ? '▼' : '▶'} Add example sentence
+                  </Text>
+                </TouchableOpacity>
+                
+                {showExampleInput && (
+                  <View style={styles.exampleInputContainer}>
+                    <TextInput
+                      style={styles.exampleInput}
+                      value={newExample}
+                      onChangeText={setNewExample}
+                      placeholder={`e.g., "The ${currentWord} was amazing."`}
+                      multiline
+                      autoCapitalize="sentences"
+                    />
+                    <TouchableOpacity onPress={handleSaveExample} style={styles.saveExampleBtn}>
+                      <Text style={styles.saveExampleText}>💾</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
 
           <View style={styles.actionButtons}>
             {feedback !== 'correct' && feedback !== 'incorrect' && (
@@ -217,6 +271,14 @@ export default function PracticeScreen({ navigation, route }) {
                   style={styles.checkButton}
                 />
               </>
+            )}
+            {feedback === 'incorrect' && (
+              <Button
+                title="Next Word"
+                icon="→"
+                variant="success"
+                onPress={nextWord}
+              />
             )}
           </View>
 
@@ -255,17 +317,6 @@ export default function PracticeScreen({ navigation, route }) {
                   </Text>
                 ))}
               </View>
-            </View>
-          )}
-
-          {feedback === 'incorrect' && (
-            <View style={styles.nextButtonContainer}>
-              <Button
-                title="Next Word"
-                icon="→"
-                variant="success"
-                onPress={nextWord}
-              />
             </View>
           )}
         </View>
@@ -351,11 +402,13 @@ const styles = StyleSheet.create({
   speakerIcon: {
     fontSize: 24,
   },
-  exampleContainer: {
-    backgroundColor: '#e8f4f8',
-    padding: 10,
-    borderRadius: 8,
+  exampleSection: {
     marginBottom: 12,
+  },
+  exampleAvailable: {
+    backgroundColor: '#e8f4f8',
+    padding: 12,
+    borderRadius: 8,
   },
   exampleLabel: {
     fontSize: 13,
@@ -366,6 +419,48 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#666',
     marginTop: 2,
+  },
+  exampleUnavailable: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e5e7',
+  },
+  exampleDropdown: {
+    padding: 12,
+  },
+  exampleDropdownText: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '600',
+  },
+  exampleInputContainer: {
+    flexDirection: 'row',
+    padding: 12,
+    paddingTop: 0,
+    gap: 8,
+  },
+  exampleInput: {
+    flex: 1,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#e5e5e7',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 14,
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
+  saveExampleBtn: {
+    backgroundColor: '#5b5fc7',
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveExampleText: {
+    fontSize: 20,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -398,7 +493,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f8f9fa',
     borderRadius: 8,
-    marginBottom: 15,
   },
   comparisonLabel: {
     fontSize: 14,
@@ -422,8 +516,5 @@ const styles = StyleSheet.create({
     color: '#dc3545',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
-  },
-  nextButtonContainer: {
-    marginTop: 5,
   },
 });
